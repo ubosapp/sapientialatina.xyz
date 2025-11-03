@@ -4,16 +4,17 @@ A simple web app for discovering and exploring famous Latin quotes.
 
 ## Deployment on Vercel
 
-This project is configured for deployment on Vercel, but requires a specific manual configuration in the Vercel Dashboard to work correctly. This is due to Vercel's automatic framework detection.
+This project is configured for a streamlined deployment on Vercel. It uses a minimal build script defined in `package.json` to create a `public` output directory, which Vercel automatically serves.
 
-**IMPORTANT:** To deploy this project successfully, you must set the "Framework Preset" in your Vercel project settings.
+**Deployment Instructions:**
+
+For the most reliable deployment, it's recommended to give Vercel a hint about the project structure.
 
 1.  Navigate to your project in the Vercel Dashboard.
 2.  Go to **Settings > General**.
 3.  Under the **Build & Development Settings** section:
     *   Set **Framework Preset** to **Other**.
-    *   Ensure the **Build Command** input field is **EMPTY**. Vercel will then correctly fall back to using the `build` script defined in `package.json`.
 4.  Click **Save**.
-5.  Go to the **Deployments** tab and **Redeploy** your latest commit to apply the new settings.
+5.  Go to the **Deployments** tab and **Redeploy** your latest commit.
 
-These settings will prevent Vercel from incorrectly identifying the project as "Vite" and will ensure the serverless function and static files are deployed correctly.
+The `vercel.json` and `package.json` files are configured to handle the rest automatically. This setup prevents Vercel from incorrectly identifying the project as "Vite" and ensures a successful build.

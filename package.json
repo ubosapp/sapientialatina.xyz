@@ -4,7 +4,7 @@
   "private": true,
   "description": "Backend for Verba Latina quote generation",
   "scripts": {
-    "build": "echo 'No build step required for this project.'"
+    "build": "mkdir public && cp index.html index.css index.tsx metadata.json public/"
   },
   "dependencies": {
     "@google/genai": "^1.25.0"
