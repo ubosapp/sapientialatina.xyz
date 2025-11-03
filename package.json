@@ -1,12 +1,18 @@
 {
-  "name": "verba-latina-api",
+  "name": "verba-latina-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Backend for Verba Latina quote generation",
+  "description": "Frontend and backend for Verba Latina",
   "scripts": {
-    "build": "mkdir public && cp index.html index.css index.tsx metadata.json public/"
+    "build": "esbuild index.tsx --bundle --outfile=public/index.js --minify --platform=browser --log-level=warning && cp index.html index.css metadata.json public/"
   },
   "dependencies": {
-    "@google/genai": "^1.25.0"
+    "@google/genai": "^1.25.0",
+    "lucide-react": "^0.309.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.4"
   }
 }
