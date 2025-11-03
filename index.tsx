@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
-import { GoogleGenAI, Type } from "@google/genai";
 
 // --- DATA ---
 type Language = 'it' | 'en' | 'es' | 'fr' | 'de';
@@ -347,58 +346,21 @@ const LS_THEME_KEY = 'verba_latina_theme';
 
 // --- API HELPER ---
 const generateNewQuote = async (existingQuotes: Quote[]): Promise<Omit<Quote, 'id'>> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const existingLatinPhrases = existingQuotes.map(q => q.latin).join('; ');
-
-  const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
-    contents: `Generate a new, famous Latin quote that is NOT in the following list: ${existingLatinPhrases}. Provide the author, source (e.g., "Odes, I, 11"), translations, and detailed explanations for Italian, English, Spanish, French, and German. The author and source fields must also be translated into all 5 languages. The 'source' should be the direct citation, not a long description. The long description about the origin should go into the 'context' field inside 'details'.`,
-    config: {
-      responseMimeType: 'application/json',
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          latin: { type: Type.STRING },
-          author: {
-            type: Type.OBJECT,
-            properties: {
-              it: { type: Type.STRING }, en: { type: Type.STRING }, es: { type: Type.STRING }, fr: { type: Type.STRING }, de: { type: Type.STRING },
-            },
-            required: ['it', 'en', 'es', 'fr', 'de'],
-          },
-          source: {
-            type: Type.OBJECT,
-            properties: {
-              it: { type: Type.STRING }, en: { type: Type.STRING }, es: { type: Type.STRING }, fr: { type: Type.STRING }, de: { type: Type.STRING },
-            },
-            required: ['it', 'en', 'es', 'fr', 'de'],
-          },
-          translations: {
-            type: Type.OBJECT,
-            properties: {
-              it: { type: Type.STRING }, en: { type: Type.STRING }, es: { type: Type.STRING }, fr: { type: Type.STRING }, de: { type: Type.STRING },
-            },
-            required: ['it', 'en', 'es', 'fr', 'de'],
-          },
-          details: {
-            type: Type.OBJECT,
-            properties: {
-              it: { type: Type.OBJECT, properties: { context: { type: Type.STRING }, application: { type: Type.STRING }, example: { type: Type.STRING } }, required: ['context', 'application', 'example'] },
-              en: { type: Type.OBJECT, properties: { context: { type: Type.STRING }, application: { type: Type.STRING }, example: { type: Type.STRING } }, required: ['context', 'application', 'example'] },
-              es: { type: Type.OBJECT, properties: { context: { type: Type.STRING }, application: { type: Type.STRING }, example: { type: Type.STRING } }, required: ['context', 'application', 'example'] },
-              fr: { type: Type.OBJECT, properties: { context: { type: Type.STRING }, application: { type: Type.STRING }, example: { type: Type.STRING } }, required: ['context', 'application', 'example'] },
-              de: { type: Type.OBJECT, properties: { context: { type: Type.STRING }, application: { type: Type.STRING }, example: { type: Type.STRING } }, required: ['context', 'application', 'example'] },
-            },
-            required: ['it', 'en', 'es', 'fr', 'de'],
-          }
-        },
-        required: ['latin', 'author', 'source', 'translations', 'details'],
-      }
-    }
+  const response = await fetch('/api/generate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ existingQuotes: existingQuotes.map(q => ({ latin: q.latin })) }),
   });
 
-  const jsonString = response.text;
-  return JSON.parse(jsonString) as Omit<Quote, 'id'>;
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Unknown server error' }));
+    throw new Error(`API error: ${response.statusText} - ${errorData.error || ''}`);
+  }
+  
+  const newQuoteData = await response.json();
+  return newQuoteData as Omit<Quote, 'id'>;
 };
 
 
