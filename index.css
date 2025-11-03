@@ -1,23 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* Light theme (default) */
 :root {
-  --color-main-bg: #1c1917; /* stone-900 */
-  --color-card: #292524; /* stone-800 */
-  --color-card-secondary: rgba(12, 10, 9, 0.5); /* stone-900/50 */
-  --color-text-primary: #e7e5e4; /* stone-200 */
-  --color-text-secondary: #a8a29e; /* stone-400 */
-  --color-accent: #fcd34d; /* amber-300 */
-  --color-accent-muted: rgba(252, 211, 77, 0.7); /* amber-300/70 */
-  --color-accent-darker: rgba(252, 211, 77, 0.9); /* amber-300/90 */
-  --color-accent-text: #1c1917; /* stone-900 */
-  --color-border: #44403c; /* stone-700 */
-  --color-button: #44403c; /* stone-700 */
-  --color-button-hover: #57534e; /* stone-600 */
-}
-
-html.light {
   --color-main-bg: #fdf2e2;
   --color-card: #ffffff;
   --color-card-secondary: #f8f8f4;
@@ -30,6 +12,22 @@ html.light {
   --color-border: #e7e5e4; /* stone-200 */
   --color-button: #e7e5e4; /* stone-200 */
   --color-button-hover: #d6d3d1; /* stone-300 */
+}
+
+/* Dark theme overrides */
+html.dark {
+  --color-main-bg: #1c1917; /* stone-900 */
+  --color-card: #292524; /* stone-800 */
+  --color-card-secondary: rgba(12, 10, 9, 0.5); /* stone-900/50 */
+  --color-text-primary: #e7e5e4; /* stone-200 */
+  --color-text-secondary: #a8a29e; /* stone-400 */
+  --color-accent: #fcd34d; /* amber-300 */
+  --color-accent-muted: rgba(252, 211, 77, 0.7); /* amber-300/70 */
+  --color-accent-darker: rgba(252, 211, 77, 0.9); /* amber-300/90 */
+  --color-accent-text: #1c1917; /* stone-900 */
+  --color-border: #44403c; /* stone-700 */
+  --color-button: #44403c; /* stone-700 */
+  --color-button-hover: #57534e; /* stone-600 */
 }
 
 body {

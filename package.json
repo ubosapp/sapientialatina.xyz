@@ -2,12 +2,11 @@
   "name": "verba-latina-app",
   "version": "1.0.0",
   "private": true,
-  "description": "Frontend and backend for Verba Latina",
+  "description": "Frontend for Verba Latina",
   "scripts": {
-    "build": "esbuild index.tsx --bundle --outfile=public/index.js --minify --platform=browser --log-level=warning && cp index.html index.css metadata.json public/"
+    "build": "mkdir -p public && esbuild index.tsx --bundle --outfile=public/index.js --minify --platform=browser && cp index.html public/index.html && cp index.css public/index.css"
   },
   "dependencies": {
-    "@google/genai": "^1.25.0",
     "lucide-react": "^0.309.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

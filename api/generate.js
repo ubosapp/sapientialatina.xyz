@@ -62,7 +62,8 @@ module.exports = async (req, res) => {
         }
     });
     
-    const jsonString = response.text;
+    // Trim whitespace from the response to ensure robust JSON parsing.
+    const jsonString = response.text.trim();
     const newQuoteData = JSON.parse(jsonString);
 
     return res.status(200).json(newQuoteData);

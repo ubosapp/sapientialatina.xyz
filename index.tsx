@@ -15,9 +15,7 @@ import {
   Volume2,
   Sun,
   Moon,
-  Shuffle,
   AlertCircle,
-  Loader2,
 } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
@@ -214,7 +212,6 @@ const uiTranslations = {
     context: 'Contesto',
     practicalUse: 'Uso Pratico',
     exampleLabel: "Esempio d'uso",
-    generateWithAI: 'Genera con AI',
     saveFavorite: 'Salva nei preferiti',
     removeFavorite: 'Rimuovi dai preferiti',
     showFavorites: 'Mostra preferiti',
@@ -231,8 +228,7 @@ const uiTranslations = {
     playPronunciation: 'Riproduci pronuncia',
     switchToLight: 'Passa al tema chiaro',
     switchToDark: 'Passa al tema scuro',
-    generatingQuote: 'Carico la frase del giorno...',
-    generationFailed: 'Generazione fallita. Riprova.',
+    loading: 'Carico la frase del giorno...',
     storageFailed: 'Impossibile salvare le preferenze.',
   },
   en: {
@@ -240,7 +236,6 @@ const uiTranslations = {
     context: 'Context',
     practicalUse: 'Practical Use',
     exampleLabel: 'Usage Example',
-    generateWithAI: 'Generate with AI',
     saveFavorite: 'Save to favorites',
     removeFavorite: 'Remove from favorites',
     showFavorites: 'Show favorites',
@@ -257,8 +252,7 @@ const uiTranslations = {
     playPronunciation: 'Play pronunciation',
     switchToLight: 'Switch to light theme',
     switchToDark: 'Switch to dark theme',
-    generatingQuote: 'Loading the quote of the day...',
-    generationFailed: 'Generation failed. Please try again.',
+    loading: 'Loading the quote of the day...',
     storageFailed: 'Could not save preferences.',
   },
   es: {
@@ -266,7 +260,6 @@ const uiTranslations = {
     context: 'Contexto',
     practicalUse: 'Uso Práctico',
     exampleLabel: 'Ejemplo de Uso',
-    generateWithAI: 'Generar con IA',
     saveFavorite: 'Guardar en favoritos',
     removeFavorite: 'Eliminar de favoritos',
     showFavorites: 'Mostrar favoritos',
@@ -283,8 +276,7 @@ const uiTranslations = {
     playPronunciation: 'Reproducir pronunciación',
     switchToLight: 'Cambiar a tema claro',
     switchToDark: 'Cambiar a tema oscuro',
-    generatingQuote: 'Cargando la cita del día...',
-    generationFailed: 'La generación falló. Por favor, inténtalo de nuevo.',
+    loading: 'Cargando la cita del día...',
     storageFailed: 'No se pudieron guardar las preferencias.',
   },
   fr: {
@@ -292,7 +284,6 @@ const uiTranslations = {
     context: 'Contexte',
     practicalUse: 'Usage Pratique',
     exampleLabel: "Exemple d'utilisation",
-    generateWithAI: 'Générer avec l\'IA',
     saveFavorite: 'Enregistrer dans les favoris',
     removeFavorite: 'Retirer des favoris',
     showFavorites: 'Afficher les favoris',
@@ -306,11 +297,10 @@ const uiTranslations = {
     showDetailsAria: (quote: string) => `Afficher les détails de "${quote}"`,
     removeFromFavorites: 'Retirer des favoris',
     removeFromFavoritesAria: (quote: string) => `Retirer des favoris "${quote}"`,
-    playPronunciation: 'Jouer la prononciation',
+    playPronunciation: 'Jouer la pronunciation',
     switchToLight: 'Passer au thème clair',
     switchToDark: 'Passer au thème sombre',
-    generatingQuote: 'Chargement de la citation du jour...',
-    generationFailed: 'La génération a échoué. Veuillez réessayer.',
+    loading: 'Chargement de la citation du jour...',
     storageFailed: 'Impossible d\'enregistrer les préférences.',
   },
   de: {
@@ -318,7 +308,6 @@ const uiTranslations = {
     context: 'Kontext',
     practicalUse: 'Praktische Anwendung',
     exampleLabel: 'Anwendungsbeispiel',
-    generateWithAI: 'Mit KI generieren',
     saveFavorite: 'Zu Favoriten hinzufügen',
     removeFavorite: 'Aus Favoriten entfernen',
     showFavorites: 'Favoriten anzeigen',
@@ -335,34 +324,13 @@ const uiTranslations = {
     playPronunciation: 'Aussprache abspielen',
     switchToLight: 'Zum hellen Thema wechseln',
     switchToDark: 'Zum dunklen Thema wechseln',
-    generatingQuote: 'Zitat des Tages wird geladen...',
-    generationFailed: 'Generierung fehlgeschlagen. Bitte versuche es erneut.',
+    loading: 'Zitat des Tages wird geladen...',
     storageFailed: 'Einstellungen konnten nicht gespeichert werden.',
   },
 };
 
 const LS_FAVORITES_KEY = 'verba_latina_favorites';
 const LS_THEME_KEY = 'verba_latina_theme';
-
-// --- API HELPER ---
-const generateNewQuote = async (existingQuotes: Quote[]): Promise<Omit<Quote, 'id'>> => {
-  const response = await fetch('/api/generate', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ existingQuotes: existingQuotes.map(q => ({ latin: q.latin })) }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ error: 'Unknown server error' }));
-    throw new Error(`API error: ${response.statusText} - ${errorData.error || ''}`);
-  }
-  
-  const newQuoteData = await response.json();
-  return newQuoteData as Omit<Quote, 'id'>;
-};
-
 
 // --- FAVORITES PANEL COMPONENT ---
 const FavoritesPanel = ({
@@ -488,7 +456,6 @@ function App() {
   const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
   const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('it');
   const [activeTab, setActiveTab] = useState<
     'translation' | 'context' | 'application'
@@ -498,7 +465,7 @@ function App() {
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('light');
   const [toast, setToast] = useState({ message: '', visible: false, type: 'info' as ToastType });
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -523,8 +490,8 @@ function App() {
         const storedTheme = localStorage.getItem(LS_THEME_KEY) as Theme;
         if (storedTheme) {
           setTheme(storedTheme);
-        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-          setTheme('light');
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          setTheme('dark');
         }
       } catch (error) {
         console.error('Failed to load base settings from localStorage', error);
@@ -554,7 +521,9 @@ function App() {
   // Update theme class on body and save to localStorage when theme changes
   useEffect(() => {
     document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
     try {
         localStorage.setItem(LS_THEME_KEY, theme);
     } catch (error) {
@@ -607,24 +576,6 @@ function App() {
     [favorites, currentQuote]
   );
   
-  const handleGenerateNewQuote = useCallback(async () => {
-    setIsGenerating(true);
-    try {
-      const newQuoteData = await generateNewQuote(quotes);
-      const newId = Math.max(...quotes.map(q => q.id), 0) + 1;
-      const newQuote = { ...newQuoteData, id: newId };
-      
-      setQuotes(prevQuotes => [...prevQuotes, newQuote]);
-      setCurrentQuote(newQuote);
-      setActiveTab('translation');
-    } catch (error) {
-      console.error("Failed to generate new quote", error);
-      showToast(t.generationFailed, 'error');
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [quotes, t]);
-
   const updateFavorites = (newFavorites) => {
     setFavorites(newFavorites);
     try {
@@ -682,12 +633,12 @@ function App() {
       ? favorites.filter((id) => id !== currentQuote.id)
       : [...favorites, currentQuote.id];
     updateFavorites(newFavorites);
-  }, [isFavorite, favorites, currentQuote]);
+  }, [isFavorite, favorites, currentQuote, updateFavorites]);
 
   const removeFavorite = useCallback((quoteIdToRemove: number) => {
     const newFavorites = favorites.filter((id) => id !== quoteIdToRemove);
     updateFavorites(newFavorites);
-  }, [favorites]);
+  }, [favorites, updateFavorites]);
   
   const viewQuote = useCallback((quote: Quote) => {
       setCurrentQuote(quote);
@@ -741,7 +692,7 @@ function App() {
     return (
        <main className="min-h-screen w-full flex items-center justify-center p-4 bg-[var(--color-main-bg)] font-sans transition-colors duration-300">
          <div className="text-center">
-            <p className="text-2xl font-serif text-[var(--color-accent)] animate-pulse">{t.generatingQuote}</p>
+            <p className="text-2xl font-serif text-[var(--color-accent)] animate-pulse">{t.loading}</p>
          </div>
        </main>
     )
@@ -825,7 +776,7 @@ function App() {
             </div>
           </div>
 
-          <footer className="flex items-center justify-center gap-3 pt-4 border-t border-[var(--color-border)]">
+          <footer className="flex items-center justify-around gap-3 pt-4 border-t border-[var(--color-border)]">
             <button
               onClick={toggleTheme}
               title={theme === 'dark' ? t.switchToLight : t.switchToDark}
@@ -845,15 +796,6 @@ function App() {
                   isFavorite ? 'fill-red-500 text-red-500' : ''
                 } ${isPulsing ? 'animate-heart-pulse' : ''}`}
               />
-            </button>
-            <button
-              onClick={handleGenerateNewQuote}
-              disabled={isGenerating}
-              title={t.generateWithAI}
-              aria-label={t.generateWithAI}
-              className="p-4 rounded-full bg-[var(--color-accent)] text-[var(--color-accent-text)] hover:bg-[var(--color-accent-darker)] transition-transform transform hover:scale-110 shadow-lg disabled:opacity-70 disabled:cursor-wait disabled:scale-100"
-            >
-              {isGenerating ? <Loader2 size={24} className="animate-spin" /> : <Shuffle size={24} />}
             </button>
              <button
               onClick={() => setIsFavoritesOpen(true)}
