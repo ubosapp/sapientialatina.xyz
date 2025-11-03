@@ -1,20 +1,19 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Sapientia Latina
 
-# Run and deploy your AI Studio app
+A simple web app for discovering and exploring famous Latin quotes.
 
-This contains everything you need to run your app locally.
+## Deployment on Vercel
 
-View your app in AI Studio: https://ai.studio/apps/drive/1DBGcewnHwlrV5NtW9Mpbn8EXZnC7aahA
+This project is configured for deployment on Vercel, but requires a specific manual configuration in the Vercel Dashboard to work correctly. This is due to Vercel's automatic framework detection.
 
-## Run Locally
+**IMPORTANT:** To deploy this project successfully, you must set the "Framework Preset" in your Vercel project settings.
 
-**Prerequisites:**  Node.js
+1.  Navigate to your project in the Vercel Dashboard.
+2.  Go to **Settings > General**.
+3.  Under the **Build & Development Settings** section:
+    *   Set **Framework Preset** to **Other**.
+    *   Ensure the **Build Command** input field is **EMPTY**. Vercel will then correctly fall back to using the `build` script defined in `package.json`.
+4.  Click **Save**.
+5.  Go to the **Deployments** tab and **Redeploy** your latest commit to apply the new settings.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+These settings will prevent Vercel from incorrectly identifying the project as "Vite" and will ensure the serverless function and static files are deployed correctly.
