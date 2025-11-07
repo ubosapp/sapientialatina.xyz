@@ -16,8 +16,8 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/generate"
+      "src": "/api/generate",
+      "dest": "/api/generate.js"
     },
     {
       "handle": "filesystem"

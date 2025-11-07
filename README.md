@@ -4,25 +4,34 @@ Un'applicazione web per scoprire ed esplorare famose citazioni latine.
 
 ---
 
-## ‼️ ISTRUZIONI CRITICHE PER IL DEPLOY SU VERCEL ‼️
+## 1. 🔑 Configurazione Chiave API (OBBLIGATORIO)
 
-**ATTENZIONE:** L'errore `vite: command not found` che stai riscontrando **NON** è un problema del codice, ma un'impostazione nell'interfaccia utente di Vercel che sta sovrascrivendo la nostra configurazione.
+Per permettere all'applicazione di generare nuove citazioni, è **assolutamente necessario** configurare la tua chiave API di Google Gemini come variabile d'ambiente in Vercel.
 
-Per risolvere definitivamente questo problema, segui questi passaggi:
+**Segui questi passaggi:**
 
-1.  **Vai alla Dashboard di Vercel** e seleziona il tuo progetto (`sapientialatina.xyz`).
-2.  Vai alla scheda **Settings**.
-3.  Nel menu a sinistra, seleziona **General**.
-4.  Trova la sezione **Build & Development Settings**.
-5.  Cerca l'opzione **Framework Preset**. Molto probabilmente è impostata su "Vite".
-6.  Clicca sul menu a tendina e seleziona **Other**.
-7.  Clicca su **Save**.
+1.  **Vai alla Dashboard di Vercel** e seleziona il tuo progetto.
+2.  Vai su **Settings -> Environment Variables**.
+3.  Crea una nuova variabile:
+    *   **Name:** `API_KEY`
+    *   **Value:** Incolla qui la tua chiave API di Gemini.
+4.  Assicurati che la variabile sia disponibile in tutti gli ambienti (Production, Preview, Development).
+5.  **Salva** le modifiche.
+6.  **Esegui un nuovo deploy:** Vai alla scheda **Deployments**, clicca sui tre puntini (`...`) accanto all'ultimo deployment e seleziona **Redeploy** per applicare la nuova variabile.
 
+Senza questo passaggio, la funzione "Nuova Citazione" non potrà funzionare e mostrerà solo le citazioni già presenti.
 
+---
 
-Una volta salvata questa impostazione, Vercel smetterà di cercare di usare `vite` e seguirà correttamente le istruzioni di build definite nel nostro progetto.
+## 2. ‼️ ISTRUZIONI PER IL DEPLOY SU VERCEL ‼️
 
-**Per avviare un nuovo deploy dopo aver modificato l'impostazione:**
-Vai alla scheda **Deployments**, clicca sui tre puntini (`...`) accanto all'ultimo tentativo di build e seleziona **Redeploy**. Assicurati di non avere modifiche non salvate.
+Se riscontri un errore di build come `vite: command not found`, è dovuto a un'impostazione errata del "Framework Preset" su Vercel.
 
-Questo risolverà il problema di deploy una volta per tutte.
+**Come risolvere:**
+
+1.  Nella dashboard del tuo progetto Vercel, vai su **Settings -> General**.
+2.  Trova la sezione **Build & Development Settings**.
+3.  Imposta il **Framework Preset** su **Other**.
+4.  **Salva** e riesegui il deploy.
+
+Questo garantirà che Vercel utilizzi la configurazione di build corretta definita nel nostro progetto.
