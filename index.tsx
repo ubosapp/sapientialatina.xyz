@@ -158,21 +158,30 @@ const api = {
         signal: controller.signal,
       });
 
-      const responseData = await response.json();
-
+      // If the response is not OK, handle the error case first.
       if (!response.ok) {
-        // La nostra API ora restituisce un errore strutturato { error, details }
-        const errorMessage = responseData.error || `La richiesta API è fallita con stato ${response.status}`;
-        const errorDetails = responseData.details;
+        let errorMessage = `La richiesta API è fallita con stato ${response.status}`;
+        let errorDetails = '';
+        try {
+          // Try to parse the error response from our backend
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          errorDetails = errorData.details || '';
+        } catch (e) {
+          // If parsing fails, it means the server sent something else (e.g., HTML error page)
+          errorDetails = await response.text(); // Get the raw text for debugging
+          console.error("Could not parse error response as JSON:", errorDetails);
+        }
         
         const error = new Error(errorMessage);
-        (error as any).details = errorDetails; // Allega i dettagli per il logging
+        (error as any).details = errorDetails;
         throw error;
       }
+
+      // If response is OK, we can safely parse the JSON.
+      const newQuoteData = await response.json();
       
-      const newQuoteData = responseData;
-      
-      // Basic validation of the response data
+      // Basic validation of the successful response data
       if (!newQuoteData || typeof newQuoteData.latin !== 'string' || !newQuoteData.latin) {
         throw new Error('Received invalid or incomplete quote data from API.');
       }
