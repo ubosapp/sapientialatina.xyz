@@ -62,7 +62,7 @@ const initialQuotes: Quote[] = [
       },
       en: { context: "Part of an ode that invites Leuconoe to enjoy the present without worrying about the future, a central theme in Epicurean philosophy.", application: "Use 'Carpe diem' on a social media post for a photo of a special moment, or to motivate a friend to seize an immediate opportunity instead of procrastinating.", example: 'Example: "This spontaneous trip to the mountains... Carpe diem!"' },
       es: { context: 'Parte de una oda que invita a Leucónoe a disfrutar del presente sin preocuparse por el futuro, un tema central en la filosofía epicúrea.', application: "Usa 'Carpe diem' en una publicación en redes sociales para una foto de un momento especial, o para motivar a un amigo a aprovechar una oportunidad inmediata en lugar de posponerla.", example: 'Ejemplo: "Este viaje espontáneo a las montañas... ¡Carpe diem!"' },
-      fr: { context: "Partie d'une ode qui invite Leuconoé à profiter du présent sans se soucier de l'avenir, un thème central de la philosophie épicurienne.", application: "Utilisez 'Carpe diem' sur un post de réseau social pour une photo d'un moment spécial, ou pour motiver un ami à saisir une opportunité immédiate au lieu de procrastiner.", example: 'Exemple : "Ce voyage improvisé à la montagne... Carpe diem !"' },
+      fr: { context: "Partie d'une ode qui invite Leuconoé à profiter du présent sans se soucier de l'avenir, un thème central de la philosophie épicurienne.", application: "Utilisez 'Carpe diem' sur un post de réseau social pour une photo d'un moment spécial, ou pour motiver un ami à saisir une opportunità immédiate au lieu de procrastiner.", example: 'Exemple : "Ce voyage improvisé à la montagne... Carpe diem !"' },
       de: { context: 'Teil einer Ode, die Leukonoe einlädt, die Gegenwart zu genießen, ohne sich um die Zukunft zu sorgen, ein zentrales Thema in der epikureischen Philosophie.', application: "Verwenden Sie 'Carpe diem' in einem Social-Media-Beitrag für ein Foto eines besonderen Moments oder um einen Freund zu motivieren, eine sofortige Gelegenheit zu ergreifen, anstatt sie aufzuschieben.", example: 'Beispiel: "Dieser spontane Ausflug in die Berge... Carpe diem!"' },
     }
   },
@@ -121,7 +121,7 @@ function useToast() {
   const [toast, setToast] = useState({ message: '', visible: false, type: 'info' as ToastType });
   const timeoutRef = useRef<number | null>(null);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info', duration = 4000) => {
+  const showToast = useCallback((message: string, type: ToastType = 'info', duration = 6000) => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setToast({ message, type, visible: true });
     timeoutRef.current = window.setTimeout(() => {
@@ -158,12 +158,19 @@ const api = {
         signal: controller.signal,
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        // Throw an error with status to handle it in the calling function
-        throw new Error(`API request failed with status ${response.status}`);
+        // La nostra API ora restituisce un errore strutturato { error, details }
+        const errorMessage = responseData.error || `La richiesta API è fallita con stato ${response.status}`;
+        const errorDetails = responseData.details;
+        
+        const error = new Error(errorMessage);
+        (error as any).details = errorDetails; // Allega i dettagli per il logging
+        throw error;
       }
       
-      const newQuoteData = await response.json();
+      const newQuoteData = responseData;
       
       // Basic validation of the response data
       if (!newQuoteData || typeof newQuoteData.latin !== 'string' || !newQuoteData.latin) {
@@ -372,53 +379,41 @@ function App() {
   }, []);
 
   const handleShuffle = useCallback(async () => {
-    // 1. Set loading state to provide user feedback
     setIsShuffling(true);
 
-    // 2. Define a fallback function in case the API fails
     const shuffleToExistingQuote = () => {
-      // Get all indices except the current one
       const otherQuoteIndices = quotes.map((_, i) => i).filter(i => i !== currentQuoteIndex);
       if (otherQuoteIndices.length > 0) {
-        // Pick a random index from the available ones
         const randomIndex = otherQuoteIndices[Math.floor(Math.random() * otherQuoteIndices.length)];
         setCurrentQuoteIndex(randomIndex);
       }
-      // If there's only one quote, it will just stay there.
     };
 
     try {
-      // 3. Attempt to fetch a new quote from the API
       const newQuoteData = await api.generateQuote(quotes);
-
-      // 4. Check if the generated quote is a duplicate of an existing one
       const isDuplicate = quotes.some(
         q => q.latin.trim().toLowerCase() === newQuoteData.latin.trim().toLowerCase()
       );
       
       if (isDuplicate) {
-        // If it's a duplicate, use the fallback
         shuffleToExistingQuote();
       } else {
-        // 5. If it's a new quote, add it to the state
         const newQuote: Quote = { 
           ...newQuoteData, 
           id: Date.now() // Use a timestamp as a simple unique ID
         };
-        
-        // Add the new quote to our list and display it
         setQuotes(prev => [...prev, newQuote]);
-        setCurrentQuoteIndex(quotes.length); // The index of the new quote is the old length
+        setCurrentQuoteIndex(quotes.length);
       }
     } catch (error) {
-      // 6. Handle any errors from the API call
-      console.error('Failed to fetch a new quote:', error.message);
-      // Show a user-friendly message
-      showToast(t.newQuoteError, 'info'); 
-      // Use the fallback to still show a different quote to the user
+      // L'oggetto 'error' ora contiene il messaggio user-friendly dalla nostra API
+      console.error('Errore durante la generazione:', (error as any).details || error.message);
+      
+      // Mostra il messaggio di errore specifico dal backend. Se non c'è, usa quello di default.
+      showToast(error.message || t.newQuoteError, 'error'); 
+      
       shuffleToExistingQuote();
     } finally {
-      // 7. Reset the loading state
       setIsShuffling(false);
     }
   }, [quotes, currentQuoteIndex, t.newQuoteError, showToast]);
