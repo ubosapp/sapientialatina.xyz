@@ -14,7 +14,7 @@ export default async (req, res) => {
     // --- 2. Controllo della configurazione del server ---
     if (!process.env.API_KEY) {
       console.error('La variabile d\'ambiente API_KEY non è impostata.');
-      return res.status(500).json({ error: 'Errore di configurazione del server: Chiave API mancante. Per favore, imposta la variabile d\'ambiente API_KEY nel tuo hosting.' });
+      return res.status(500).json({ error: 'Errore di configurazione del server: Chiave API mancante. Per favore, imposta la variabile d\'ambiente API_KEY nel tuo hosting.', details: 'API_KEY environment variable is not set.' });
     }
 
     // --- 3. Parsing e validazione dell'input ---
@@ -100,10 +100,24 @@ export default async (req, res) => {
   } catch (error) {
     // --- 9. Gestione degli errori ---
     console.error('Errore in /api/generate:', error);
-    // Fornisce un messaggio di errore più specifico in base al tipo
-    if (error instanceof SyntaxError) {
-      return res.status(500).json({ error: 'Impossibile analizzare la risposta dell\'IA.', details: error.message });
+    
+    let userMessage = 'Impossibile generare una nuova citazione in questo momento.';
+    const details = error.message || 'Nessun dettaglio aggiuntivo.';
+
+    // Controlla errori specifici e comuni dell'API di Google e li traduce per l'utente
+    if (details.includes('API key not valid')) {
+        userMessage = 'La chiave API fornita non è valida. Controlla la variabile d\'ambiente API_KEY su Vercel.';
+    } else if (details.includes('permission denied') && (details.includes('generativelanguage.googleapis.com') || details.includes('gemini'))) {
+        userMessage = 'L\'API di Gemini non è abilitata. Abilita l\'API "Generative Language" nella tua Google Cloud Console.';
+    } else if (details.includes('billing account')) {
+        userMessage = 'Problema di fatturazione. Assicurati che il tuo progetto Google Cloud sia collegato a un account di fatturazione attivo.';
+    } else if (error instanceof SyntaxError) {
+        userMessage = 'La risposta dell\'IA non era in un formato valido. Riprova.';
     }
-    return res.status(500).json({ error: 'Si è verificato un errore interno del server.', details: error.message });
+
+    return res.status(500).json({ 
+        error: userMessage, // Messaggio user-friendly per il toast
+        details: details // Errore originale per il log sulla console del client
+    });
   }
 };
